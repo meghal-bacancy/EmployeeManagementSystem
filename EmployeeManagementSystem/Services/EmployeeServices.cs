@@ -111,5 +111,23 @@ namespace EmployeeManagementSystem.Services
 
             return true;
         }
+
+        public async Task<List<EmployeeDTO>> GetAllEmployeesAsync()
+        {
+            var employees = await _employeeRepository.GetAllEmployeesAsync();
+
+            return employees.Select(e => new EmployeeDTO
+            {
+                EmployeeID = e.EmployeeID,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Email = e.Email,
+                DateofBirth = e.DateofBirth,
+                PhoneNumber = e.PhoneNumber,
+                Address = e.Address,
+                DepartmentID = e.DepartmentID,
+                TechStack = e.TechStack
+            }).ToList();
+        }
     }
 }

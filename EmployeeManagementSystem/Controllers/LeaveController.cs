@@ -18,8 +18,6 @@ namespace EmployeeManagementSystem.Controllers
         private readonly ILeaveService _leaveService;
         private readonly AppDbContext _context;
 
-
-
         public LeaveController(ILeaveService leaveService, AppDbContext context)
         {
             _leaveService = leaveService;
@@ -61,8 +59,6 @@ namespace EmployeeManagementSystem.Controllers
 
             return Ok(new { Message = leavesList });
         }
-
-        //show employee on leave for a particular day
 
         [HttpGet("admin/viewPendingLeave/")]
         [Authorize(Policy = "AdminOnly")]

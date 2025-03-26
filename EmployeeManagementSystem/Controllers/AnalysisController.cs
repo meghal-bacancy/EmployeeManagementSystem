@@ -11,13 +11,11 @@ namespace EmployeeManagementSystem.Controllers
     [ApiController]
     public class AnalysisController : ControllerBase
     {
-        private readonly ITimesheetRepository _timesheetRepository;
         private readonly IAnalysisService _analysisService;
 
-        public AnalysisController(IAnalysisService analysisService, ITimesheetRepository timesheetRepository)
+        public AnalysisController(IAnalysisService analysisService)
         {
             _analysisService = analysisService;
-            _timesheetRepository = timesheetRepository;
         }
 
         private int? GetUserId()
@@ -61,6 +59,16 @@ namespace EmployeeManagementSystem.Controllers
         {
             var fileContent = await _analysisService.ExportTimesheetsToExcelAsync(id, order, pageNumber, pageSize);
             return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Timesheets.xlsx");
+        }
+
+        [HttpGet("admin/leavesRemaining")]
+        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "RequireValidID")]
+        public async Task<IActionResult> LeavesRemainingAdmin([FromQuery] GetAnalyticsLeaveDTO getAnalyticsLeaveDTO)
+        {
+            var analyticsLeavesDTO = await _analysisService.LeavesRemaining(getAnalyticsLeaveDTO.id, getAnalyticsLeaveDTO.year);
+
+            return Ok(new { analyticsLeavesDTO });
         }
     }
 }

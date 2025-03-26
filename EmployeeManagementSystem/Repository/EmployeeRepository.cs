@@ -34,5 +34,12 @@ namespace EmployeeManagementSystem.Repository
                 .Where(t => t.EmployeeID == employeeId && t.Date >= DateOnly.FromDateTime(startOfWeek) && t.Date <= DateOnly.FromDateTime(endOfWeek))
                 .SumAsync(t => t.TotalHoursWorked);
         }
+
+        public async Task<List<Employee>> GetAllEmployeesAsync()
+        {
+            return await _context.Employees
+                .Where(e => e.IsActive)  // Assuming `IsActive` is used to filter active employees
+                .ToListAsync();
+        }
     }
 }

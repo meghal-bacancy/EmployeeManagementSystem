@@ -7,5 +7,6 @@ namespace EmployeeManagementSystem.IServices
     {
         Task<TotalTimeLoggedDTO?> TotalLoggedHours(int id, DateOnly date, string duration);
         Task<byte[]> ExportTimesheetsToExcelAsync(int id, char order = 'A', int pageNumber = 1, int pageSize = 10);
+        Task<AnalyticsLeaveDTO> LeavesRemaining(int id, int year);
     }
 }

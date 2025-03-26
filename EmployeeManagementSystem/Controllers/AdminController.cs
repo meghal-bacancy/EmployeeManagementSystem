@@ -59,6 +59,19 @@ namespace EmployeeManagementSystem.Controllers
             return CreatedAtAction(nameof(AddEmployee), new { id = emp.EmployeeID });
         }
 
+        [HttpGet("viewAllEmployeeDetails")]
+        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "RequireValidID")]
+        public async Task<IActionResult> viewAllEmployeeDetails()
+        {
+            var employees = await _employeeServices.GetAllEmployeesAsync();
+
+            if (employees == null || !employees.Any())
+                return NotFound("No employees found");
+
+            return Ok(new { employees });
+        }
+
         [HttpGet("employeeDetails/{id}")]
         [Authorize(Policy = "AdminOnly")]
         [Authorize(Policy = "RequireValidID")]

@@ -4,6 +4,7 @@ using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
+using EmployeeManagementSystem.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Services
@@ -11,10 +12,12 @@ namespace EmployeeManagementSystem.Services
     public class AnalysisService : IAnalysisService
     {
         private readonly ITimesheetRepository _timesheetRepository;
+        private readonly ILeaveRepository _leaveRepository;
 
-        public AnalysisService(ITimesheetRepository timesheetRepository)
+        public AnalysisService(ITimesheetRepository timesheetRepository, ILeaveRepository leaveRepository)
         {
             _timesheetRepository = timesheetRepository;
+            _leaveRepository = leaveRepository;
         }
 
         public async Task<TotalTimeLoggedDTO?> TotalLoggedHours(int id, DateOnly date, string duration)
@@ -66,13 +69,21 @@ namespace EmployeeManagementSystem.Services
                 worksheet.Cell(row, 7).Value = timesheets[i].Description;
             }
 
-            //using var stream = new MemoryStream();
-            //workbook.SaveAs(stream);
-
-            //var fileContent = stream.ToArray();
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
+        }
+
+        public async Task<AnalyticsLeaveDTO> LeavesRemaining(int id, int year)
+        {
+            int leavesTaken = await _leaveRepository.LeaveTakenAsync(id, year);
+            int leavesRemaing = Leave.TotalLeaves - leavesTaken;
+
+            return new AnalyticsLeaveDTO
+            {
+                LeaveTaken = leavesTaken,
+                LeaveLeft = leavesRemaing > 0 ? leavesRemaing : 0
+            };
         }
     }
 }

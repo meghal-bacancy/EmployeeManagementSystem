@@ -1,4 +1,6 @@
-﻿namespace EmployeeManagementSystem.Models
+﻿using System.Numerics;
+
+namespace EmployeeManagementSystem.Models
 {
     public class Leave
     {
@@ -11,5 +13,6 @@
         public string Reason { get; set; } // 
         public string Status { get; set; } //
         public DateTime AppliedAt { get; set; } //
+        public static int TotalLeaves { get; set; } = 18;
     }
 }

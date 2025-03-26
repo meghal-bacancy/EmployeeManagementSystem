@@ -13,6 +13,7 @@ namespace EmployeeManagementSystem.IServices
         Task<bool> UpdateEmployeeDetailsAsync(int userId, UpdateEmployeeDTO updateEmployeeDTO);
         Task<bool> DeactivateEmployee(int id);
         Task<bool> ActivateEmployee(int id);
+        Task<List<EmployeeDTO>> GetAllEmployeesAsync();
 
     }
 }

@@ -41,5 +41,37 @@ namespace EmployeeManagementSystem.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        public async Task<string> ResetPassword(string userRole, int id, ResetPasswordDTO resetPasswordDTO)
+        {
+            if (userRole == "Employee")
+            {
+                var emp = await _employeeRepository.GetEmployeeByIDAsync(id);
+
+                if (emp == null)
+                    return "Employee Not Found";
+                if (BCrypt.Net.BCrypt.Verify(resetPasswordDTO.OldPassword, emp.Password))
+                {
+                    emp.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordDTO.NewPassword);
+                    await _employeeRepository.UpdateAsync(emp);
+                    return "Password Update Succesfull";
+                }
+                return "Old Password is wrong";
+            }
+            else if (userRole == "Admin")
+            {
+                var admin = await _adminRepository.GetAdminIDAsyncIsActive(id);
+
+                if (admin == null)
+                    return "Employee Not Found";
+                if (BCrypt.Net.BCrypt.Verify(resetPasswordDTO.OldPassword, admin.Password))
+                {
+                    admin.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordDTO.NewPassword);
+                    await _adminRepository.UpdateAsync(admin);
+                    return "Password Update Succesfull";
+                }
+                return "Old Password is wrong";
+            }
+            return "Invalid Role";
+        }
     }
 }

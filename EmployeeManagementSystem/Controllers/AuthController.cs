@@ -1,8 +1,6 @@
 ﻿using EmployeeManagementSystem.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using EmployeeManagementSystem.IServices;
-using Microsoft.EntityFrameworkCore;
-using EmployeeManagementSystem.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -21,6 +19,11 @@ namespace EmployeeManagementSystem.Controllers
             _adminService = adminService;
             _employeeServices = employeeServices;
             _authServices = authServices;
+        }
+
+        private string? GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value;
         }
 
         private int? GetUserId()
@@ -47,20 +50,24 @@ namespace EmployeeManagementSystem.Controllers
             return Unauthorized(new { message = "Invalid email or password" });
         }
 
-        [HttpPost("resetPassword")]
-        [Authorize(Policy = "AdminOnly")]
+        [HttpPut("resetPassword")]
+        [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> resetPassword(ResetPasswordDTO resetPasswordDTO)
         {
+            string? userRole = GetUserRole();
+            if (userRole == null)
+                return Unauthorized(new { Message = "Invalid or missing user Role in token." });
 
-            return Ok("Password Updated Succesfully");
-        }
+            int? userId = GetUserId();
+            if (userId == null)
+                return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-        [HttpPost("resetPassword")]
-        [Authorize(Policy = "EmployeeOnly")]
-        public async Task<IActionResult> resetord(ResetPasswordDTO resetPasswordDTO)
-        {
+            string msg = await _authServices.ResetPassword(userRole, userId.Value, resetPasswordDTO);
 
-            return Ok("Password Updated Succesfully");
+            if (msg == "Password Update Succesfull")
+                return Ok(new { Message = msg });
+
+            return BadRequest(new { Message = msg }); 
         }
     }
 }

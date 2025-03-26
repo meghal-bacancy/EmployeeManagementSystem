@@ -1,4 +1,5 @@
-﻿using EmployeeManagementSystem.IRepository;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,6 +52,13 @@ namespace EmployeeManagementSystem.Repository
                                   .Skip((pageNumber - 1) * pageSize)
                                   .Take(pageSize)
                                   .ToListAsync();
+        }
+
+        public async Task<List<Timesheet>> GetTimesheetsByIdDateAsync(int id, DateOnly StartDate, DateOnly EndDate)
+        {
+            return await _context.Timesheets
+                            .Where(t => t.EmployeeID == id && t.Date >= StartDate && t.Date <= EndDate)
+                            .ToListAsync();
         }
     }
 }

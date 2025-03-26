@@ -9,5 +9,6 @@ namespace EmployeeManagementSystem.IRepository
         Task<decimal> GetTotalHoursForMonthAsync(int employeeId, DateOnly referenceDate);
         Task<List<Timesheet>> GetTimesheetsByUserAAsync(int id, int pageNumber, int pageSize);
         Task<List<Timesheet>> GetTimesheetsByUserDAsync(int id, int pageNumber, int pageSize);
+        Task<List<Timesheet>> GetTimesheetsByIdDateAsync(int id, DateOnly StartDate, DateOnly EndDate);
     }
 }

@@ -22,6 +22,7 @@ builder.Services.AddScoped<IEmployeeServices, EmployeeService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ITimesheetService, TimesheetService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -85,5 +85,30 @@ namespace EmployeeManagementSystem.Services
                 LeaveLeft = leavesRemaing > 0 ? leavesRemaing : 0
             };
         }
+
+        public async Task<AnalyticsTimeDTO> TimeAnalytics(int id, DateOnly StarDate, DateOnly EndDate)
+        {
+            List<Timesheet> timeLogs = await _timesheetRepository.GetTimesheetsByIdDateAsync(id, StarDate, EndDate);
+            if (!timeLogs.Any())
+            {
+                return new AnalyticsTimeDTO
+                {
+                    avgStartTime = new TimeOnly(0, 0),
+                    avgEndTime = new TimeOnly(0, 0),
+                    avgTotalHoursWorked = 0
+                };
+            }
+
+            var avgStartTime = new TimeOnly((int)timeLogs.Average(t => t.StartTime.Hour), (int)timeLogs.Average(t => t.StartTime.Minute));
+            var avgEndTime = new TimeOnly((int)timeLogs.Average(t => t.EndTime?.Hour), (int)timeLogs.Average(t => t.EndTime?.Minute));
+            var avgTotalHoursWorked = timeLogs.Average(t => (t.EndTime - t.StartTime)?.TotalHours);
+
+            return new AnalyticsTimeDTO
+            {
+                avgStartTime = avgStartTime,
+                avgEndTime = avgEndTime,
+                avgTotalHoursWorked = (decimal)avgTotalHoursWorked
+            };
+        }
     }
 }

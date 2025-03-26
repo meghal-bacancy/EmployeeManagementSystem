@@ -70,5 +70,15 @@ namespace EmployeeManagementSystem.Controllers
 
             return Ok(new { analyticsLeavesDTO });
         }
+
+        [HttpGet("admin/analyticsTime/{id}")]
+        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "RequireValidID")]
+        public async Task<IActionResult> AnalyticsTime([FromRoute] int id, [FromQuery] GetAnalyticsTimeDTO getAnalyticsTimeDTO)
+        {
+            var analyticsTimeDTO = await _analysisService.TimeAnalytics(id, getAnalyticsTimeDTO.StarDate, getAnalyticsTimeDTO.EndDate);
+
+            return Ok(new { analyticsTimeDTO });
+        }
     }
 }

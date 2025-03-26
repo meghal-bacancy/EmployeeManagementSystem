@@ -13,31 +13,34 @@ namespace EmployeeManagementSystem.Services
     {
         private readonly ITimesheetRepository _timesheetRepository;
         private readonly ILeaveRepository _leaveRepository;
+        private readonly Dictionary<string, Func<int, DateOnly, Task<decimal>>> _durationHandlers;
+
 
         public AnalysisService(ITimesheetRepository timesheetRepository, ILeaveRepository leaveRepository)
         {
             _timesheetRepository = timesheetRepository;
             _leaveRepository = leaveRepository;
+            _durationHandlers = new Dictionary<string, Func<int, DateOnly, Task<decimal>>>
+            {
+                { "week", _timesheetRepository.GetTotalHoursForWeekAsync },
+                { "month", _timesheetRepository.GetTotalHoursForMonthAsync }
+            };
         }
 
         public async Task<TotalTimeLoggedDTO?> TotalLoggedHours(int id, DateOnly date, string duration)
         {
-            decimal totalHours;
-
-            if (duration == "week")
-                totalHours = await _timesheetRepository.GetTotalHoursForWeekAsync(id, date);
-            else if (duration == "month")
-                totalHours = await _timesheetRepository.GetTotalHoursForMonthAsync(id, date);
-            else
-                return null;
-
-            TotalTimeLoggedDTO timeLoggedDTO = new TotalTimeLoggedDTO
+            if (_durationHandlers.TryGetValue(duration, out var handler))
             {
-                Duration = duration,
-                TotalHoursLogged = totalHours,
-                StartDate = date
-            };
-            return timeLoggedDTO;
+                decimal totalHours = await handler(id, date);
+
+                return new TotalTimeLoggedDTO
+                {
+                    Duration = duration,
+                    TotalHoursLogged = totalHours,
+                    StartDate = date
+                };
+            }
+            return null;
         }
 
         public async Task<byte[]> ExportTimesheetsToExcelAsync(int id, char order = 'A', int pageNumber = 1, int pageSize = 10)

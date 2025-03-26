@@ -35,16 +35,11 @@ namespace EmployeeManagementSystem.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(LoginDTO loginDTO)
         {
-            var emp = await _employeeServices.GetEmployeeByIDAsyncIsActive(loginDTO.Email.ToLower());
-            if (emp != null && BCrypt.Net.BCrypt.Verify(loginDTO.Password, emp.Password))
-            {
-                return Ok(new { Token = _authServices.GenerateToken(emp.EmployeeID, "Employee") });
-            }
+            var token = await _authServices.AuthenticateAsync(loginDTO.Email, loginDTO.Password);
 
-            var admin = await _adminService.GetAdminByIDAsyncIsActive(loginDTO.Email.ToLower());
-            if (admin != null && BCrypt.Net.BCrypt.Verify(loginDTO.Password, admin.Password))
+            if (token != null)
             {
-                return Ok(new { Token = _authServices.GenerateToken(admin.AdminID, "Admin") });
+                return Ok(new { Token = token });
             }
 
             return Unauthorized(new { message = "Invalid email or password" });

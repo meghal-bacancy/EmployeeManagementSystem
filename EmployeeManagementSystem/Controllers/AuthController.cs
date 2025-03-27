@@ -12,7 +12,7 @@ namespace EmployeeManagementSystem.Controllers
     {
         private readonly IAuthServices _authServices;
 
-        public AuthController(IAuthServices authServices, IEmployeeServices employeeServices, IAdminService adminService, IEmailService emailService)
+        public AuthController(IAuthServices authServices)
         {
             _authServices = authServices;            
         }
@@ -20,14 +20,23 @@ namespace EmployeeManagementSystem.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(LoginDTO loginDTO)
         {
-            var token = await _authServices.Authenticate(loginDTO.Email, loginDTO.Password);
+            if (loginDTO == null || string.IsNullOrWhiteSpace(loginDTO.Email) || string.IsNullOrWhiteSpace(loginDTO.Password))
+                return BadRequest(new { message = "Email and password are required." });
 
-            if (token != null)
+            try
             {
-                return Ok(new { Token = token });
-            }
+                var token = await _authServices.Authenticate(loginDTO.Email, loginDTO.Password);
+                if (token != null)
+                {
+                    return Ok(new { Token = token });
+                }
 
-            return Unauthorized(new { message = "Invalid email or password" });
+                return Unauthorized(new { message = "Invalid email or password." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
+            }
         }
 
         [HttpPut("resetPassword")]
@@ -42,30 +51,54 @@ namespace EmployeeManagementSystem.Controllers
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            string msg = await _authServices.ResetPassword(userRole, userId.Value, resetPasswordDTO);
+            try
+            {
+                string msg = await _authServices.ResetPassword(userRole, userId.Value, resetPasswordDTO);
 
-            if (msg == "Password Update Succesfull")
-                return Ok(new { Message = msg });
+                if (msg == "Password Update Succesfull")
+                    return Ok(new { Message = msg });
 
-            return BadRequest(new { Message = msg }); 
+                return BadRequest(new { Message = msg });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An unexpected error occurred.", Error = ex.Message });
+            }
         }
 
         [HttpPut("request-password-reset")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequestDTO request)
         {
-            var result = await _authServices.SendPasswordResetEmail(request.Email);
-            if (result) return Ok(new { message = "Password reset email sent" });
+            try
+            {
+                bool result = await _authServices.SendPasswordResetEmail(request.Email);
 
-            return NotFound(new { message = "User not found" });
+                if (result)
+                    return Ok(new { Message = "Password reset email sent successfully." });
+
+                return NotFound(new { Message = "User not found." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing your request.", Error = ex.Message });
+            }
         }
 
         [HttpPut("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordTokenDTO request)
         {
-            var result = await _authServices.ResetPassword(request.Token, request.NewPassword);
-            if (result) return Ok(new { message = "Password updated successfully" });
+            try
+            {
 
-            return BadRequest(new { message = "Invalid or expired token" });
+                var result = await _authServices.ResetPassword(request.Token, request.NewPassword);
+                if (result) return Ok(new { message = "Password updated successfully" });
+
+                return BadRequest(new { message = "Invalid or expired token" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing your request.", Error = ex.Message });
+            }
         }
     }
 }

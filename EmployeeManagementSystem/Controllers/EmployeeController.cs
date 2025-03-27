@@ -1,7 +1,5 @@
-﻿using System.Security.Claims;
-using EmployeeManagementSystem.DTOs;
+﻿using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.Helpers;
-using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,16 +22,23 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> EmployeeDetails()
         {
-            int? userId = UserHelper.GetUserId(HttpContext);
-            if (userId == null)
-                return Unauthorized(new { Message = "Invalid or missing user ID in token." });
+            try
+            {
+                int? userId = UserHelper.GetUserId(HttpContext);
+                if (userId == null)
+                    return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            EmployeeDTO emp = await _employeeServices.GetEmployeeDetails(userId.Value);
+                EmployeeDTO emp = await _employeeServices.GetEmployeeDetails(userId.Value);
 
-            if (emp == null)
-                return NotFound("Employee Not Found");
+                if (emp == null)
+                    return NotFound("Employee Not Found");
 
-            return Ok(emp);
+                return Ok(emp);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error fetching details", ex);
+            }
         }
 
         [HttpPut("updateEmployeeDetails")]
@@ -41,16 +46,23 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> UpdateEmployeeDetails([FromBody] UpdateEmployeeDTO updateEmployeeDTO)
         {
-            int? userId = UserHelper.GetUserId(HttpContext);
-            if (userId == null)
-                return Unauthorized(new { Message = "Invalid or missing user ID in token." });
+            try
+            {
+                int? userId = UserHelper.GetUserId(HttpContext);
+                if (userId == null)
+                    return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            bool isUpdated = await _employeeServices.UpdateEmployeeDetails(userId.Value, updateEmployeeDTO);
+                bool isUpdated = await _employeeServices.UpdateEmployeeDetails(userId.Value, updateEmployeeDTO);
 
-            if (!isUpdated)
-                return NotFound(new { Message = "Employee not found." });
+                if (!isUpdated)
+                    return NotFound(new { Message = "Employee not found." });
 
-            return Ok(new { Message = "Employee updated successfully." });
+                return Ok(new { Message = "Employee updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error updating details", ex);
+            }
         }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using DocumentFormat.OpenXml.Spreadsheet;
 using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
-using EmployeeManagementSystem.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 
@@ -39,47 +37,82 @@ namespace EmployeeManagementSystem.Services
 
         public string GenerateToken(int ID, string role)
         {
-            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
-            var claims = new[]
+            try
             {
-                new Claim(ClaimTypes.NameIdentifier, ID.ToString()),
-                new Claim(ClaimTypes.Role, role)
-            };
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
-            );
+                var keyString = _config["Jwt:Key"];
+                var issuer = _config["Jwt:Issuer"];
+                var audience = _config["Jwt:Audience"];
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                if (string.IsNullOrEmpty(keyString) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
+                    throw new InvalidOperationException("JWT configuration is missing required values.");
+
+                var key = Encoding.UTF8.GetBytes(keyString);
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, ID.ToString()),
+                    new Claim(ClaimTypes.Role, role)
+                };
+
+                var token = new JwtSecurityToken(
+                    issuer: issuer,
+                    audience: audience,
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddHours(1),
+                    signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+                );
+
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to generate JWT token.", ex);
+            }
         }
 
         public async Task<string?> Authenticate(string email, string password)
         {
-            var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
-            if (emp != null && BCrypt.Net.BCrypt.Verify(password, emp.Password))
+            try
             {
-                return GenerateToken(emp.EmployeeID, "Employee");
-            }
+                var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
+                if (emp != null && BCrypt.Net.BCrypt.Verify(password, emp.Password))
+                {
+                    return GenerateToken(emp.EmployeeID, "Employee");
+                }
 
-            var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
-            if (admin != null && BCrypt.Net.BCrypt.Verify(password, admin.Password))
+                var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
+                if (admin != null && BCrypt.Net.BCrypt.Verify(password, admin.Password))
+                {
+                    return GenerateToken(admin.AdminID, "Admin");
+                }
+
+                return null;
+            }
+            catch (ArgumentException argEx)
             {
-                return GenerateToken(admin.AdminID, "Admin");
+                throw new ApplicationException($"Authentication failed: {argEx.Message}", argEx);
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred during authentication.", ex);
+            }
         }
 
         public async Task<string> ResetPassword(string userRole, int id, ResetPasswordDTO resetPasswordDTO)
         {
-            if (_resetPasswordHandlers.TryGetValue(userRole, out var handler))
+            try
             {
+                if (string.IsNullOrWhiteSpace(userRole))
+                    throw new ArgumentException("User role cannot be empty.");
+
+                if (!_resetPasswordHandlers.TryGetValue(userRole, out var handler))
+                    return "Invalid Role";
+
                 return await handler(id, resetPasswordDTO);
             }
-            return "Invalid Role";
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while resetting the password.", ex);
+            }
         }
 
         private async Task<string> ResetEmployeePassword(int id, ResetPasswordDTO resetPasswordDTO)
@@ -112,53 +145,68 @@ namespace EmployeeManagementSystem.Services
 
         public async Task<bool> SendPasswordResetEmail(string email)
         {
-            var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
-            var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
-            if (emp == null && admin == null)
+            try
             {
-                return false;
+                email = email.ToLower();
+                var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email);
+                var admin = await _adminRepository.GetAdminIDAsyncIsActive(email);
+
+                if (emp == null && admin == null)
+                {
+                    return false;
+                }
+
+                string token = Guid.NewGuid().ToString();
+                var tokens = _cache.Get<Dictionary<string, string>>(ResetTokensKey) ?? new Dictionary<string, string>();
+                tokens[email] = token;
+                _cache.Set(ResetTokensKey, tokens);
+
+                string resetLink = $"/reset-password?token={token}";
+                await _emailService.SendEmailAsync(email, "Password Reset Request", $"Token: {token}");
+
+                return true;
             }
-
-            string token = Guid.NewGuid().ToString();
-            var tokens = _cache.Get<Dictionary<string, string>>(ResetTokensKey) ?? new Dictionary<string, string>();
-            tokens[email] = token;
-            _cache.Set(ResetTokensKey, tokens);
-
-            string resetLink = $"/reset-password?token={token}";
-            await _emailService.SendEmailAsync(email, "Password Reset Request", $"Token: {token}");
-
-            return true;
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to send password reset email.", ex);
+            }
         }
 
         public async Task<bool> ResetPassword(string token, string newPassword)
         {
-            var tokens = _cache.Get<Dictionary<string, string>>(ResetTokensKey) ?? new Dictionary<string, string>();
-            var email = tokens.FirstOrDefault(x => x.Value == token).Key;
-
-            if (string.IsNullOrEmpty(email)) return false;
-
-            var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
-            if (emp != null)
+            try
             {
-                emp.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                await _employeeRepository.UpdateAsync(emp);
-                tokens.Remove(email);
-                _cache.Set(ResetTokensKey, tokens);
-                return true;
-            }
+                var tokens = _cache.Get<Dictionary<string, string>>(ResetTokensKey) ?? new Dictionary<string, string>();
+                var email = tokens.FirstOrDefault(x => x.Value == token).Key;
 
-            var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
-            if (admin != null)
+                if (string.IsNullOrEmpty(email)) return false;
+
+                var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
+                if (emp != null)
+                {
+                    emp.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    await _employeeRepository.UpdateAsync(emp);
+                    tokens.Remove(email);
+                    _cache.Set(ResetTokensKey, tokens);
+                    return true;
+                }
+
+                var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
+                if (admin != null)
+                {
+                    admin.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    await _adminRepository.UpdateAsync(admin);
+                    tokens.Remove(email);
+                    _cache.Set(ResetTokensKey, tokens);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
             {
-                admin.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                await _adminRepository.UpdateAsync(admin);
-                tokens.Remove(email);
-                _cache.Set(ResetTokensKey, tokens);
-                return true;
+                throw new ApplicationException("Failed reset password.", ex);
             }
-
-            return false;
         }
-
     }
 }

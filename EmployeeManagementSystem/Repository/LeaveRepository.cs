@@ -14,7 +14,7 @@ namespace EmployeeManagementSystem.Repository
         public async Task<List<Leave>> GetLeaveByUserAAsync(int id, string status, int pageNumber, int pageSize)
         {
             return await _context.Leaves
-                                  .Where(t => t.EmployeeID == id && t.LeaveType == status)
+                                  .Where(t => t.EmployeeID == id && t.Status == status)
                                   .OrderBy(t => t.StartDate)
                                   .Skip((pageNumber - 1) * pageSize)
                                   .Take(pageSize)
@@ -24,7 +24,7 @@ namespace EmployeeManagementSystem.Repository
         public async Task<List<Leave>> GetLeaveByUserDAsync(int id, string status, int pageNumber, int pageSize)
         {
             return await _context.Leaves
-                                  .Where(t => t.EmployeeID == id && t.LeaveType == status)
+                                  .Where(t => t.EmployeeID == id && t.Status == status)
                                   .OrderByDescending(t => t.StartDate)
                                   .Skip((pageNumber - 1) * pageSize)
                                   .Take(pageSize)

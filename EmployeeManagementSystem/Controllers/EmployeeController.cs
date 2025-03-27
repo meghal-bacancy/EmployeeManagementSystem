@@ -37,7 +37,7 @@ namespace EmployeeManagementSystem.Controllers
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error fetching details", ex);
+                return StatusCode(500, new { Message = "An error occurred while fetching employee.", Error = ex.Message });
             }
         }
 
@@ -61,7 +61,7 @@ namespace EmployeeManagementSystem.Controllers
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error updating details", ex);
+                return StatusCode(500, new { Message = "An error occurred while updating employee.", Error = ex.Message });
             }
         }
     }

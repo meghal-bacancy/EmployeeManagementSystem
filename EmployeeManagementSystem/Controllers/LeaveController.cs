@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using EmployeeManagementSystem.DTOs;
+﻿using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.Helpers;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementSystem.Controllers
 {
@@ -30,12 +25,19 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> AddLeave([FromBody] AddLeaveDTO addLeaveDTO)
         {
-            int? userId = UserHelper.GetUserId(HttpContext);
-            if (userId == null)
-                return Unauthorized(new { Message = "Invalid or missing user ID in token." });
+            try
+            {
+                int? userId = UserHelper.GetUserId(HttpContext);
+                if (userId == null)
+                    return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            string msg = await _leaveService.AddLeave(userId.Value, addLeaveDTO);
-            return Ok(new { Message = "Leave has been applied" });
+                string msg = await _leaveService.AddLeave(userId.Value, addLeaveDTO);
+                return Ok(new { Message = "Leave has been applied" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while adding leave.", Error = ex.Message });
+            }
         }
 
         [HttpGet("employee/viewLeave/{leaveType}")]
@@ -43,16 +45,23 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> ViewLeave([FromRoute] string leaveType, [FromQuery] char order = 'A', [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            int? userId = UserHelper.GetUserId(HttpContext);
-            if (userId == null)
-                return Unauthorized(new { Message = "Invalid or missing user ID in token." });
+            try
+            {
+                int? userId = UserHelper.GetUserId(HttpContext);
+                if (userId == null)
+                    return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            List<Leave> leavesList = await _leaveService.GetLeaveByUserStatusAsync(userId.Value, leaveType, order, pageNumber, pageSize);
+                List<Leave> leavesList = await _leaveService.GetLeaveByUserStatusAsync(userId.Value, leaveType, order, pageNumber, pageSize);
 
-            if (leavesList == null)
-                return NotFound("No leaves found");
+                if (leavesList == null)
+                    return NotFound("No leaves found");
 
-            return Ok(new { Message = leavesList });
+                return Ok(new { Message = leavesList });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while fetching leave.", Error = ex.Message });
+            }
         }
 
         [HttpGet("admin/viewPendingLeave/")]
@@ -60,12 +69,19 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> ViewPendingLeave()
         {
-            List<Leave> leavesList = await _leaveService.GetLeavePendingAsync();
+            try
+            {
+                List<Leave> leavesList = await _leaveService.GetLeavePendingAsync();
 
-            if (!leavesList.Any())
-                return NotFound("No leaves found");
+                if (!leavesList.Any())
+                    return NotFound("No leaves found");
 
-            return Ok(new { Message = leavesList });
+                return Ok(new { Message = leavesList });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while fetching leave.", Error = ex.Message });
+            }
         }
 
         [HttpPut("admin/leaveAction/")]
@@ -73,11 +89,18 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> ApproveLeave(LeaveActionDTO leaveActionDTO)
         {
-            string msg = await _leaveService.LeaveAction(leaveActionDTO.id, leaveActionDTO.StartDate, leaveActionDTO.action);
+            try
+            {
+                string msg = await _leaveService.LeaveAction(leaveActionDTO.id, leaveActionDTO.StartDate, leaveActionDTO.action);
 
-            if (msg == "leave updated succesfully")
-                return Ok(new { Message = msg });
-            return BadRequest(new { Message = msg });
+                if (msg == "leave updated succesfully")
+                    return Ok(new { Message = msg });
+                return BadRequest(new { Message = msg });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while updating leave.", Error = ex.Message });
+            }
         }
 
         [HttpGet("admin/employeeOnLeave/{date}")]
@@ -85,12 +108,19 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> EmployeeOnLeave([FromRoute] DateOnly date)
         {
-            List<Employee> employeeOnLeave = await _leaveService.GetEmployeesOnLeave(date);
+            try
+            {
+                List<Employee> employeeOnLeave = await _leaveService.GetEmployeesOnLeave(date);
 
-            if (!employeeOnLeave.Any())
-                return NotFound("No one leaves");
+                if (!employeeOnLeave.Any())
+                    return NotFound("No one leaves");
 
-            return Ok(new { Message = employeeOnLeave });
+                return Ok(new { Message = employeeOnLeave });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing your request.", Error = ex.Message });
+            }
         }
     }
 }

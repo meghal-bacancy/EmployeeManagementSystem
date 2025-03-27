@@ -34,7 +34,7 @@ namespace EmployeeManagementSystem.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An internal error occurred.", details = ex.Message });
+                return StatusCode(500, new { message = "An internal error occurred.",  ex.Message });
             }
         }
 
@@ -43,12 +43,19 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> AddDepartment([FromBody] AddDepartmentDTO addDepartmentDTO)
         {
-            if (addDepartmentDTO == null)
-                return BadRequest("Department Name is null");
+            if (addDepartmentDTO == null || string.IsNullOrWhiteSpace(addDepartmentDTO.DepartmentName))
+                return BadRequest("Department Name cannot be null or empty.");
 
-            Department dep = await _adminService.AddDepartmentAsync(addDepartmentDTO);
+            try
+            {
+                Department dep = await _adminService.AddDepartmentAsync(addDepartmentDTO);
 
-            return CreatedAtAction(nameof(AddDepartment), new { ID = dep.DepartmentID });
+                return CreatedAtAction(nameof(AddDepartment), new { ID = dep.DepartmentID }, dep);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
+            }
         }
 
         [HttpPost("addEmployee")]
@@ -59,21 +66,42 @@ namespace EmployeeManagementSystem.Controllers
             if (addEmployeeDTO == null)
                 return BadRequest("Data is null");
 
-            Employee emp = await _employeeServices.AddEmployee(addEmployeeDTO);
-            return CreatedAtAction(nameof(AddEmployee), new { id = emp.EmployeeID });
+            Employee emp;
+
+            try
+            {
+                emp = await _employeeServices.AddEmployee(addEmployeeDTO);
+
+                if (emp == null)
+                    return StatusCode(500, "Error occurred while adding the employee.");
+
+                return CreatedAtAction(nameof(AddEmployee), new { id = emp.EmployeeID });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
+            }
         }
+
 
         [HttpGet("viewAllEmployeeDetails")]
         [Authorize(Policy = "AdminOnly")]
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> viewAllEmployeeDetails()
         {
-            var employees = await _employeeServices.GetAllEmployees();
+            try
+            {
+                var employees = await _employeeServices.GetAllEmployees();
 
-            if (employees == null || !employees.Any())
-                return NotFound("No employees found");
+                if (employees == null || !employees.Any())
+                    return NotFound("No employees found");
 
-            return Ok(new { employees });
+                return Ok(new { employees });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
+            }
         }
 
         [HttpGet("employeeDetails/{id}")]
@@ -81,12 +109,22 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> EmployeeDetails([FromRoute] int id)
         {
-            EmployeeDTO emp = await _employeeServices.GetEmployeeDetails(id);
+            if (id <= 0)
+                return BadRequest("Invalid Employee ID");
 
-            if (emp == null)
-                return NotFound("Employee Not Found");
+            try
+            {
+                EmployeeDTO? emp = await _employeeServices.GetEmployeeDetails(id);
 
-            return Ok(emp);
+                if (emp == null)
+                    return NotFound("Employee Not Found");
+
+                return Ok(emp);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPut("updateEmployeeDetails/{id}")]
@@ -97,12 +135,22 @@ namespace EmployeeManagementSystem.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid employee ID." });
 
-            bool isUpdated = await _employeeServices.UpdateEmployeeDetails(id, updateEmployeeDTO);
+            if (updateEmployeeDTO == null)
+                return BadRequest(new { Message = "Update data cannot be null." });
 
-            if (!isUpdated)
-                return NotFound(new { Message = "Employee not found." });
+            try
+            {
+                bool isUpdated = await _employeeServices.UpdateEmployeeDetails(id, updateEmployeeDTO);
 
-            return Ok(new { Message = "Employee updated successfully." });
+                if (!isUpdated)
+                    return NotFound(new { Message = "Employee not found." });
+
+                return Ok(new { Message = "Employee updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An unexpected error occurred.", Error = ex.Message });
+            }
         }
 
         [HttpDelete("deactivateEmployee/{id}")]
@@ -113,30 +161,44 @@ namespace EmployeeManagementSystem.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid employee ID." });
 
-            bool IsUpdated = await _employeeServices.DeactivateEmployee(id);
-            if (IsUpdated)
+            try
             {
+                bool isUpdated = await _employeeServices.DeactivateEmployee(id);
+
+                if (!isUpdated)
+                    return NotFound(new { Message = "Employee not found or already deactivated." });
+
                 return Ok(new { Message = "Employee deactivated successfully." });
             }
-
-            return NotFound(new { Message = "Employee Not Found." });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An unexpected error occurred.", Error = ex.Message });
+            }
         }
+
 
         [HttpPut("activateEmployee/{id}")]
         [Authorize(Policy = "AdminOnly")]
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> ActivateEmployee([FromRoute] int id)
         {
-            if (id <= 0)
-                return BadRequest(new { Message = "Invalid employee ID." });
-
-            bool IsUpdated = await _employeeServices.ActivateEmployee(id);
-            if (IsUpdated)
+            try
             {
-                return Ok(new { Message = "Employee Activated Successfully." });
-            }
+                if (id <= 0)
+                    return BadRequest(new { Message = "Invalid employee ID." });
 
-            return NotFound(new { Message = "Employee Not Found." });
+                bool IsUpdated = await _employeeServices.ActivateEmployee(id);
+                if (IsUpdated)
+                {
+                    return Ok(new { Message = "Employee Activated Successfully." });
+                }
+
+                return NotFound(new { Message = "Employee not found or already Activated." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An unexpected error occurred.", Error = ex.Message });
+            }
         }
     }
 }

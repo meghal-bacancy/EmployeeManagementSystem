@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using EmployeeManagementSystem.DTOs;
+﻿using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
@@ -16,16 +15,6 @@ namespace EmployeeManagementSystem.Services
             _adminRepository = adminRepository;
             _departmentRepository = departmentRepository;
         }
-
-        //public async Task<Admin?> GetAdminByIDAsyncIsActive(string email)
-        //{
-        //    return await _adminRepository.GetAdminIDAsyncIsActive(email);
-        //}
-
-        //public async Task<Admin?> GetAdminByIDAsyncIsActive(int id)
-        //{
-        //    return await _adminRepository.GetAdminIDAsyncIsActive(id);
-        //}
 
         public async Task<Admin> AddAdminAsync(AddAdminDTO addAdminDTO)
         {
@@ -50,25 +39,28 @@ namespace EmployeeManagementSystem.Services
                 await _adminRepository.AddAsync(admin);
                 return admin;
             }
-            catch (InvalidOperationException ex)
-            {
-                throw new Exception($"Validation error: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while adding the admin.", ex);
+                throw new ApplicationException("An error occurred while adding the admin.", ex);
             }
         }
 
         public async Task<Department> AddDepartmentAsync(AddDepartmentDTO addDepartmentDTO)
         {
-            var department = new Department
+            try
             {
-                DepartmentName = addDepartmentDTO.DepartmentName
-            };
+                var department = new Department
+                {
+                    DepartmentName = addDepartmentDTO.DepartmentName
+                };
 
-            await _departmentRepository.AddAsync(department);
-            return department;
+                await _departmentRepository.AddAsync(department);
+                return department;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error adding department", ex);
+            }
         }
     }
 }

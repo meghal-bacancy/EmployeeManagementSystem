@@ -15,7 +15,55 @@ namespace EmployeeManagementSystem.Services
             _employeeRepository = employeeRepository;
         }
 
-        public async Task<EmployeeDTO?> GetEmployeeDetailsAsync(int userId)
+        //public async Task<Employee?> GetEmployeeByIDAsyncIsActive(int id)
+        //{
+        //    return await _employeeRepository.GetEmployeeByIDAsyncIsActive(id);
+        //}
+
+        //public async Task<Employee?> GetEmployeeByIDAsyncIsActive(string email)
+        //{
+        //    return await _employeeRepository.GetEmployeeByIDAsyncIsActive(email);
+        //}
+
+        public async Task<Employee> AddEmployee(EmployeeDTO addEmployeeDTO)
+        {
+            var emp = new Employee
+            {
+                FirstName = addEmployeeDTO.FirstName,
+                LastName = addEmployeeDTO.LastName,
+                Email = addEmployeeDTO.Email.ToLower(),
+                Password = BCrypt.Net.BCrypt.HashPassword(addEmployeeDTO.Password),
+                DateofBirth = addEmployeeDTO.DateofBirth,
+                PhoneNumber = addEmployeeDTO.PhoneNumber,
+                Address = addEmployeeDTO.Address,
+                DepartmentID = (int)addEmployeeDTO.DepartmentID,
+                TechStack = addEmployeeDTO.TechStack,
+                IsActive = true
+            };
+
+            await _employeeRepository.AddAsync(emp);
+            return emp;
+        }
+
+        public async Task<List<EmployeeDTO>> GetAllEmployees()
+        {
+            var employees = await _employeeRepository.GetAllEmployeesAsync();
+
+            return employees.Select(e => new EmployeeDTO
+            {
+                EmployeeID = e.EmployeeID,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Email = e.Email,
+                DateofBirth = e.DateofBirth,
+                PhoneNumber = e.PhoneNumber,
+                Address = e.Address,
+                DepartmentID = e.DepartmentID,
+                TechStack = e.TechStack
+            }).ToList();
+        }
+
+        public async Task<EmployeeDTO?> GetEmployeeDetails(int userId)
         {
             var employee = await _employeeRepository.GetEmployeeByIDAsyncIsActive(userId);
             if (employee == null)
@@ -35,17 +83,7 @@ namespace EmployeeManagementSystem.Services
             };
         }
 
-        public async Task<Employee?> GetEmployeeByIDAsyncIsActive(int id)
-        {
-            return await _employeeRepository.GetEmployeeByIDAsyncIsActive(id);
-        }
-
-        public async Task<Employee?> GetEmployeeByIDAsyncIsActive(string email)
-        {
-            return await _employeeRepository.GetEmployeeByIDAsyncIsActive(email);
-        }
-
-        public async Task<bool> UpdateEmployeeDetailsAsync(int userId, UpdateEmployeeDTO updateEmployeeDTO)
+        public async Task<bool> UpdateEmployeeDetails(int userId, UpdateEmployeeDTO updateEmployeeDTO)
         {
             var employee = await _employeeRepository.GetEmployeeByIDAsyncIsActive(userId);
             if (employee == null)
@@ -62,26 +100,6 @@ namespace EmployeeManagementSystem.Services
 
             await _employeeRepository.UpdateAsync(employee);
             return true;
-        }
-
-        public async Task<Employee> AddEmployeeAsync(EmployeeDTO addEmployeeDTO)
-        {
-            var emp = new Employee
-            {
-                FirstName = addEmployeeDTO.FirstName,
-                LastName = addEmployeeDTO.LastName,
-                Email = addEmployeeDTO.Email.ToLower(),
-                Password = BCrypt.Net.BCrypt.HashPassword(addEmployeeDTO.Password),
-                DateofBirth = addEmployeeDTO.DateofBirth,
-                PhoneNumber = addEmployeeDTO.PhoneNumber,
-                Address = addEmployeeDTO.Address,
-                DepartmentID = (int)addEmployeeDTO.DepartmentID,
-                TechStack = addEmployeeDTO.TechStack,
-                IsActive = true
-            };
-
-            await _employeeRepository.AddAsync(emp);
-            return emp;
         }
 
         public async Task<bool> DeactivateEmployee(int id)
@@ -112,22 +130,5 @@ namespace EmployeeManagementSystem.Services
             return true;
         }
 
-        public async Task<List<EmployeeDTO>> GetAllEmployeesAsync()
-        {
-            var employees = await _employeeRepository.GetAllEmployeesAsync();
-
-            return employees.Select(e => new EmployeeDTO
-            {
-                EmployeeID = e.EmployeeID,
-                FirstName = e.FirstName,
-                LastName = e.LastName,
-                Email = e.Email,
-                DateofBirth = e.DateofBirth,
-                PhoneNumber = e.PhoneNumber,
-                Address = e.Address,
-                DepartmentID = e.DepartmentID,
-                TechStack = e.TechStack
-            }).ToList();
-        }
     }
 }

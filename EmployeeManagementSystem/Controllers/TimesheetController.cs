@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using EmployeeManagementSystem.DTOs;
+﻿using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.Helpers;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
@@ -65,7 +64,7 @@ namespace EmployeeManagementSystem.Controllers
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            string timesheetAdded = await _timesheetService.AddTimesheetAsync(userId.Value, addTimesheetDTO);
+            string timesheetAdded = await _timesheetService.AddTimesheet(userId.Value, addTimesheetDTO);
 
             if (timesheetAdded == "Timesheet added")
                 return Ok(new { Message = timesheetAdded });
@@ -119,7 +118,7 @@ namespace EmployeeManagementSystem.Controllers
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            string updatedTimesheet = await _timesheetService.UpdateTimesheetAsync(userId.Value, updateTimesheetDTO);
+            string updatedTimesheet = await _timesheetService.UpdateTimesheet(userId.Value, updateTimesheetDTO);
 
             if (updatedTimesheet == "Timesheet updated")
                 return Ok(new { Message = updatedTimesheet });
@@ -136,7 +135,7 @@ namespace EmployeeManagementSystem.Controllers
             if (addTimesheetDTO == null)
                 return BadRequest(new { Message = "Invalid data." });
 
-            string addedTimesheet = await _timesheetService.AddTimesheetAsync(id, addTimesheetDTO);
+            string addedTimesheet = await _timesheetService.AddTimesheet(id, addTimesheetDTO);
 
             if (addedTimesheet == "Timesheet added")
                 return Ok(new { Message = addedTimesheet });
@@ -184,7 +183,7 @@ namespace EmployeeManagementSystem.Controllers
             if (updateTimesheetDTO == null)
                 return BadRequest(new { Message = "Invalid timesheet data." });
 
-            string updatedTimesheet = await _timesheetService.UpdateTimesheetAsync(id, updateTimesheetDTO);
+            string updatedTimesheet = await _timesheetService.UpdateTimesheet(id, updateTimesheetDTO);
 
             if (updatedTimesheet == "Timesheet updated")
                 return Ok(new { Message = updatedTimesheet });
@@ -197,7 +196,7 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> DeleteTimesheet([FromRoute] int id, [FromRoute] DateOnly date)
         {
-            var timesheet = await _timesheetService.DeleteTimesheetAsync(id, date);
+            var timesheet = await _timesheetService.DeleteTimesheet(id, date);
 
             if (timesheet)
                 return Ok("Timesheet deleted");

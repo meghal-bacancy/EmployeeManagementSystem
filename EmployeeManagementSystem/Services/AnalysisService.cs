@@ -43,7 +43,7 @@ namespace EmployeeManagementSystem.Services
             return null;
         }
 
-        public async Task<byte[]> ExportTimesheetsToExcelAsync(int id, char order = 'A', int pageNumber = 1, int pageSize = 10)
+        public async Task<byte[]> ExportTimesheetsToExcel(int id, char order = 'A', int pageNumber = 1, int pageSize = 10)
         {
             List<Timesheet> timesheets = order.ToString().ToUpper() == "A"
                 ? await _timesheetRepository.GetTimesheetsByUserAAsync(id, pageNumber, pageSize)
@@ -77,18 +77,6 @@ namespace EmployeeManagementSystem.Services
             return stream.ToArray();
         }
 
-        public async Task<AnalyticsLeaveDTO> LeavesRemaining(int id, int year)
-        {
-            int leavesTaken = await _leaveRepository.LeaveTakenAsync(id, year);
-            int leavesRemaing = Leave.TotalLeaves - leavesTaken;
-
-            return new AnalyticsLeaveDTO
-            {
-                LeaveTaken = leavesTaken,
-                LeaveLeft = leavesRemaing > 0 ? leavesRemaing : 0
-            };
-        }
-
         public async Task<AnalyticsTimeDTO> TimeAnalytics(int id, DateOnly StarDate, DateOnly EndDate)
         {
             List<Timesheet> timeLogs = await _timesheetRepository.GetTimesheetsByIdDateAsync(id, StarDate, EndDate);
@@ -111,6 +99,18 @@ namespace EmployeeManagementSystem.Services
                 avgStartTime = avgStartTime,
                 avgEndTime = avgEndTime,
                 avgTotalHoursWorked = (decimal)avgTotalHoursWorked
+            };
+        }
+
+        public async Task<AnalyticsLeaveDTO> LeavesRemaining(int id, int year)
+        {
+            int leavesTaken = await _leaveRepository.LeaveTakenAsync(id, year);
+            int leavesRemaing = Leave.TotalLeaves - leavesTaken;
+
+            return new AnalyticsLeaveDTO
+            {
+                LeaveTaken = leavesTaken,
+                LeaveLeft = leavesRemaing > 0 ? leavesRemaing : 0
             };
         }
     }

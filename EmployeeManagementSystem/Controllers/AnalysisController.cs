@@ -50,7 +50,7 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> ExportTimesheetsToExcelAsync([FromRoute] int id, [FromQuery] char order = 'A', [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var fileContent = await _analysisService.ExportTimesheetsToExcelAsync(id, order, pageNumber, pageSize);
+            var fileContent = await _analysisService.ExportTimesheetsToExcel(id, order, pageNumber, pageSize);
             return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Timesheets.xlsx");
         }
 

@@ -28,7 +28,7 @@ namespace EmployeeManagementSystem.Controllers
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            EmployeeDTO emp = await _employeeServices.GetEmployeeDetailsAsync(userId.Value);
+            EmployeeDTO emp = await _employeeServices.GetEmployeeDetails(userId.Value);
 
             if (emp == null)
                 return NotFound("Employee Not Found");
@@ -45,7 +45,7 @@ namespace EmployeeManagementSystem.Controllers
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            bool isUpdated = await _employeeServices.UpdateEmployeeDetailsAsync(userId.Value, updateEmployeeDTO);
+            bool isUpdated = await _employeeServices.UpdateEmployeeDetails(userId.Value, updateEmployeeDTO);
 
             if (!isUpdated)
                 return NotFound(new { Message = "Employee not found." });

@@ -1,4 +1,5 @@
-﻿using EmployeeManagementSystem.DTOs;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
@@ -16,30 +17,47 @@ namespace EmployeeManagementSystem.Services
             _departmentRepository = departmentRepository;
         }
 
-        public async Task<Admin?> GetAdminByIDAsyncIsActive(string email)
-        {
-            return await _adminRepository.GetAdminIDAsyncIsActive(email);
-        }
+        //public async Task<Admin?> GetAdminByIDAsyncIsActive(string email)
+        //{
+        //    return await _adminRepository.GetAdminIDAsyncIsActive(email);
+        //}
 
-        public async Task<Admin?> GetAdminByIDAsyncIsActive(int id)
-        {
-            return await _adminRepository.GetAdminIDAsyncIsActive(id);
-        }
+        //public async Task<Admin?> GetAdminByIDAsyncIsActive(int id)
+        //{
+        //    return await _adminRepository.GetAdminIDAsyncIsActive(id);
+        //}
 
         public async Task<Admin> AddAdminAsync(AddAdminDTO addAdminDTO)
         {
-            var admin = new Admin
+            try
             {
-                FirstName = addAdminDTO.FirstName,
-                LastName = addAdminDTO.LastName,
-                Email = addAdminDTO.Email.ToLower(),
-                Password = BCrypt.Net.BCrypt.HashPassword(addAdminDTO.Password),
-                PhoneNumber = addAdminDTO.PhoneNumber,
-                IsActive = true
-            };
+                var existingAdmin = await _adminRepository.GetAdminIDAsyncIsActive(addAdminDTO.Email);
+                if (existingAdmin != null)
+                {
+                    throw new InvalidOperationException("An admin with this email already exists.");
+                }
 
-            await _adminRepository.AddAsync(admin);
-            return admin;
+                var admin = new Admin
+                {
+                    FirstName = addAdminDTO.FirstName,
+                    LastName = addAdminDTO.LastName,
+                    Email = addAdminDTO.Email.ToLower(),
+                    Password = BCrypt.Net.BCrypt.HashPassword(addAdminDTO.Password),
+                    PhoneNumber = addAdminDTO.PhoneNumber,
+                    IsActive = true
+                };
+
+                await _adminRepository.AddAsync(admin);
+                return admin;
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new Exception($"Validation error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while adding the admin.", ex);
+            }
         }
 
         public async Task<Department> AddDepartmentAsync(AddDepartmentDTO addDepartmentDTO)

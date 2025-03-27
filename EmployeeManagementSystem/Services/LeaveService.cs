@@ -56,6 +56,10 @@ namespace EmployeeManagementSystem.Services
         {
             return await _leaveRepository.GetLeavePendingAsync();
         }
+        public async Task<List<Employee>> GetEmployeesOnLeave(DateOnly date)
+        {
+            return await _leaveRepository.GetEmployeesOnLeaveAsync(date);
+        }
 
         public async Task<string> LeaveAction(int id, DateOnly StartDate, string Action)
         {
@@ -72,11 +76,6 @@ namespace EmployeeManagementSystem.Services
             await _leaveRepository.UpdateAsync(leave);
 
             return "leave updated succesfully";
-        }
-
-        public async Task<List<Employee>> GetEmployeesOnLeave(DateOnly date)
-        {
-            return await _leaveRepository.GetEmployeesOnLeaveAsync(date);
         }
     }
 }

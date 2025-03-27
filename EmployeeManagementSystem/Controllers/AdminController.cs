@@ -27,9 +27,15 @@ namespace EmployeeManagementSystem.Controllers
             if (addAdminDTO == null)
                 return BadRequest("Data is null");
 
-            Admin admin = await _adminService.AddAdminAsync(addAdminDTO);
-
-            return CreatedAtAction(nameof(AddAdmin), new { id = admin.AdminID });
+            try
+            {
+                Admin admin = await _adminService.AddAdminAsync(addAdminDTO);
+                return CreatedAtAction(nameof(AddAdmin), new { id = admin.AdminID });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An internal error occurred.", details = ex.Message });
+            }
         }
 
         [HttpPost("addDepartment")]
@@ -53,7 +59,7 @@ namespace EmployeeManagementSystem.Controllers
             if (addEmployeeDTO == null)
                 return BadRequest("Data is null");
 
-            Employee emp = await _employeeServices.AddEmployeeAsync(addEmployeeDTO);
+            Employee emp = await _employeeServices.AddEmployee(addEmployeeDTO);
             return CreatedAtAction(nameof(AddEmployee), new { id = emp.EmployeeID });
         }
 
@@ -62,7 +68,7 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> viewAllEmployeeDetails()
         {
-            var employees = await _employeeServices.GetAllEmployeesAsync();
+            var employees = await _employeeServices.GetAllEmployees();
 
             if (employees == null || !employees.Any())
                 return NotFound("No employees found");
@@ -75,7 +81,7 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> EmployeeDetails([FromRoute] int id)
         {
-            EmployeeDTO emp = await _employeeServices.GetEmployeeDetailsAsync(id);
+            EmployeeDTO emp = await _employeeServices.GetEmployeeDetails(id);
 
             if (emp == null)
                 return NotFound("Employee Not Found");
@@ -91,7 +97,7 @@ namespace EmployeeManagementSystem.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid employee ID." });
 
-            bool isUpdated = await _employeeServices.UpdateEmployeeDetailsAsync(id, updateEmployeeDTO);
+            bool isUpdated = await _employeeServices.UpdateEmployeeDetails(id, updateEmployeeDTO);
 
             if (!isUpdated)
                 return NotFound(new { Message = "Employee not found." });

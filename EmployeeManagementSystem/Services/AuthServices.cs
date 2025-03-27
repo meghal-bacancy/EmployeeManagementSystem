@@ -56,7 +56,7 @@ namespace EmployeeManagementSystem.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<string?> AuthenticateAsync(string email, string password)
+        public async Task<string?> Authenticate(string email, string password)
         {
             var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
             if (emp != null && BCrypt.Net.BCrypt.Verify(password, emp.Password))
@@ -110,7 +110,7 @@ namespace EmployeeManagementSystem.Services
             return "Password Update Successful";
         }
 
-        public async Task<bool> SendPasswordResetEmailAsync(string email)
+        public async Task<bool> SendPasswordResetEmail(string email)
         {
             var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
             var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());

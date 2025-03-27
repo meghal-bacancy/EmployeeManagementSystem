@@ -20,7 +20,7 @@ namespace EmployeeManagementSystem.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(LoginDTO loginDTO)
         {
-            var token = await _authServices.AuthenticateAsync(loginDTO.Email, loginDTO.Password);
+            var token = await _authServices.Authenticate(loginDTO.Email, loginDTO.Password);
 
             if (token != null)
             {
@@ -53,7 +53,7 @@ namespace EmployeeManagementSystem.Controllers
         [HttpPut("request-password-reset")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequestDTO request)
         {
-            var result = await _authServices.SendPasswordResetEmailAsync(request.Email);
+            var result = await _authServices.SendPasswordResetEmail(request.Email);
             if (result) return Ok(new { message = "Password reset email sent" });
 
             return NotFound(new { message = "User not found" });

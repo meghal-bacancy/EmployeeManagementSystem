@@ -74,6 +74,7 @@ This section provides an overview of the key API endpoints for the Employee Mana
   ```
 - **Responses:**
   - **200 OK:** Returns a JWT token.
+  - **400 Bad Request:** Invalid Parameter.
   - **401 Unauthorized:** Invalid credentials.
 
 #### Reset Password (Logged In)
@@ -125,6 +126,7 @@ This section provides an overview of the key API endpoints for the Employee Mana
 - **Responses:**
   - **200 OK:** Password reset success.
   - **400 Bad Request:** Invalid Token.
+  - **500 Internal Server Error:** 
 ---
 
 ### 2. Admin Endpoints
@@ -273,7 +275,7 @@ This section provides an overview of the key API endpoints for the Employee Mana
   ```
 - **Responses:**
   - **200 OK:** Employee details updated.
-  - **400 Bad Request:** Invalid data.
+  - **401 Unauthorized:** Invalid ID.
   - **404 NotFound:** Employee not found.
   - **500 Internal Server Error:** 
 ---
@@ -287,7 +289,6 @@ This section provides an overview of the key API endpoints for the Employee Mana
 - **Description:** Start Timmer.  
 - **Responses:**
   - **200 OK:** Timmer started.
-  - **400 Bad Request:** Invalid data.
   - **401 Unauthorized:** Invalid credentials.
   - **409 Conflict:** Timesheet already exist.
   - **500 Internal Server Error:** 
@@ -303,7 +304,6 @@ This section provides an overview of the key API endpoints for the Employee Mana
   ```
 - **Responses:**
   - **200 OK:** Timmer end.
-  - **400 Bad Request:** Invalid data.
   - **401 Unauthorized:** Invalid credentials.
   - **404 NotFound:** Timesheet doe not exist.
   - **500 Internal Server Error:** 
@@ -361,6 +361,7 @@ This section provides an overview of the key API endpoints for the Employee Mana
 - **Responses:**
   - **200 OK:** Timmesheet sent.
   - **400 Bad Request:** Invalid data/ timesheet exist.
+  - **401 Unauthorized:** Invalid ID.
   - **500 Internal Server Error:**
 
 #### Add Timesheet
@@ -378,7 +379,6 @@ This section provides an overview of the key API endpoints for the Employee Mana
 - **Responses:**
   - **200 OK:** Timmer added.
   - **400 Bad Request:** Invalid data/ timesheet exist.
-  - **404 NotFound:** Timesheet doe not exist.
   - **500 Internal Server Error:**
 
 #### View Timesheet

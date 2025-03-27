@@ -426,3 +426,120 @@ This section provides an overview of the key API endpoints for the Employee Mana
   - **404 NotFound:** Timesheet doe not exist.  
   - **500 Internal Server Error:**
 ---
+
+### 5. Leave Endpoints
+*All endpoints require user authentication.*
+
+#### Add Leave
+- **Method:** POST
+- **URL:** `/api/Leave/employee/applyLeave`
+- **Description:** Add Leave.  
+  ```json
+  {
+    "startDate": "2025-03-27",
+    "endDate": "2025-03-27",
+    "leaveType": "Sick",
+    "reason": "string"
+  }
+  ```
+- **Responses:**
+  - **200 OK:** Leave added.
+  - **401 Unauthorized:** Invalid credentials.
+  - **500 Internal Server Error:**
+
+#### View Leave
+- **Method:** GET
+- **URL:** `/api/Leave/employee/viewLeave/{status}`
+- **Description:** View Leave based on status.  
+- **Responses:**
+  - **200 OK:** Leave fetched.
+  - **401 Unauthorized:** Invalid credentials.
+  - **404 NotFound:** No leaves.  
+  - **500 Internal Server Error:**
+
+#### View Pending Leave
+- **Method:** GET
+- **URL:** `/api/Leave/admin/viewPendingLeave`
+- **Description:** Admin can view pending Leave.  
+- **Responses:**
+  - **200 OK:** Leave fetched.
+  - **404 NotFound:** No leaves.  
+  - **500 Internal Server Error:**
+
+#### Approve/Reject Leave
+- **Method:** PUT
+- **URL:** `/api/Leave/admin/leaveAction`
+- **Description:** Approve/Reject Leave.
+  ```json
+  {
+    "startDate": "2025-03-27",
+    "endDate": "2025-03-27",
+    "leaveType": "Sick",
+    "reason": "string"
+  }
+  ```
+- **Responses:**
+  - **200 OK:** Leave updated.
+  - **400 Bad Request:** 
+  - **500 Internal Server Error:**
+
+#### Employee on Leave
+- **Method:** PUT
+- **URL:** `/api/Leave/admin/employeeOnLeave/{date}`
+- **Description:** Employee on leave on a particular date.
+- **Responses:**
+  - **200 OK:** Employee on Leave fetched.
+  - **404 NotFound:** No one leaves.  
+  - **500 Internal Server Error:**
+---
+
+### 6. Analysis Endpoints
+*All endpoints require user authentication.*
+
+#### Total Logged Hours
+- **Method:** GET
+- **URL:** `/api/Analysis/employee/totalLoggedHours/{duration}/{date}`
+- **Description:** Total Logged Hours.  
+- **Responses:**
+  - **200 OK:** Total Logged Hours.
+  - **400 Bad Request:** Parameter Invalid
+  - **401 Unauthorized:** Invalid credentials.
+  - **500 Internal Server Error:**
+
+#### Total Logged Hours
+- **Method:** GET
+- **URL:** `/api/Analysis/admin/totalLoggedHours/{id}/{duration}/{date}`
+- **Description:** Total Logged Hours Admin.  
+- **Responses:**
+  - **200 OK:** Total Logged Hours.
+  - **400 Bad Request:** Parameter Invalid
+  - **500 Internal Server Error:**
+
+#### Export Timesheet as Excel
+- **Method:** GET
+- **URL:** `/api/Analysis/admin/exportTimesheetsToExceL/{id}`
+- **Description:** Export Timesheet as Excel.  
+- **Responses:**
+  - **200 OK:** Excel Sent.
+  - **404 NotFound:** No timesheet. 
+  - **500 Internal Server Error:**
+
+#### Time Analytics
+- **Method:** GET
+- **URL:** `/api/Analysis/admin/analyticsTime/{id}`
+- **Description:** Avg StarTime, EndTime and TotalLoggedTime.  
+- **Responses:**
+  - **200 OK:** Time Analytics Sent.
+  - **400 Bad Request:** Parameter Invalid
+  - **404 NotFound:** No timesheet found. 
+  - **500 Internal Server Error:**
+
+#### Leave Analytics
+- **Method:** GET
+- **URL:** `/api/Analysis/admin/leavesRemaining`
+- **Description:** Leave Taken and Leave Remaining.  
+- **Responses:**
+  - **200 OK:** Leave Analytics Sent.
+  - **404 NotFound:** Employee Not found. 
+  - **500 Internal Server Error:**
+---

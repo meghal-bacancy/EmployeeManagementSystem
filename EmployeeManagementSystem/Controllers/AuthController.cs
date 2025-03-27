@@ -89,7 +89,6 @@ namespace EmployeeManagementSystem.Controllers
         {
             try
             {
-
                 var result = await _authServices.ResetPassword(request.Token, request.NewPassword);
                 if (result) return Ok(new { message = "Password updated successfully" });
 

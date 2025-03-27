@@ -5,6 +5,5 @@
         public string Duration { get; set; }
         public DateOnly StartDate { get; set; }
         public decimal TotalHoursLogged { get; set; }
-
     }
 }

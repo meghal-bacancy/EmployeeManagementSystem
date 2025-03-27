@@ -40,10 +40,10 @@ namespace EmployeeManagementSystem.Controllers
             }
         }
 
-        [HttpGet("employee/viewLeave/{leaveType}")]
+        [HttpGet("employee/viewLeave/{status}")]
         [Authorize(Policy = "EmployeeOnly")]
         [Authorize(Policy = "RequireValidID")]
-        public async Task<IActionResult> ViewLeave([FromRoute] string leaveType, [FromQuery] char order = 'A', [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> ViewLeave([FromRoute] string status, [FromQuery] char order = 'A', [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace EmployeeManagementSystem.Controllers
                 if (userId == null)
                     return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-                List<Leave> leavesList = await _leaveService.GetLeaveByUserStatusAsync(userId.Value, leaveType, order, pageNumber, pageSize);
+                List<Leave> leavesList = await _leaveService.GetLeaveByUserStatusAsync(userId.Value, status, order, pageNumber, pageSize);
 
                 if (leavesList == null)
                     return NotFound("No leaves found");

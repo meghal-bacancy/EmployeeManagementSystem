@@ -15,16 +15,6 @@ namespace EmployeeManagementSystem.Services
             _employeeRepository = employeeRepository;
         }
 
-        //public async Task<Employee?> GetEmployeeByIDAsyncIsActive(int id)
-        //{
-        //    return await _employeeRepository.GetEmployeeByIDAsyncIsActive(id);
-        //}
-
-        //public async Task<Employee?> GetEmployeeByIDAsyncIsActive(string email)
-        //{
-        //    return await _employeeRepository.GetEmployeeByIDAsyncIsActive(email);
-        //}
-
         public async Task<Employee> AddEmployee(EmployeeDTO addEmployeeDTO)
         {
             try

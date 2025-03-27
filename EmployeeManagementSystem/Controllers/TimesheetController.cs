@@ -92,7 +92,7 @@ namespace EmployeeManagementSystem.Controllers
         [HttpGet("admin/viewTimesheets/")]
         [Authorize(Policy = "EmployeeOnly")]
         [Authorize(Policy = "RequireValidID")]
-        public async Task<IActionResult> ViewTimesheets([FromQuery] string order = "A", [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> ViewTimesheets([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] char order = 'A')
         {
             int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
@@ -159,7 +159,7 @@ namespace EmployeeManagementSystem.Controllers
         [HttpGet("admin/viewTimesheets/{id}/")]
         [Authorize(Policy = "AdminOnly")]
         [Authorize(Policy = "RequireValidID")]
-        public async Task<IActionResult> ViewTimesheets([FromRoute] int id, [FromQuery] string order = "A", [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> ViewTimesheets([FromRoute] int id, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] char order = 'A')
         {
             if (pageNumber < 1 || pageSize < 1)
                 return BadRequest(new { Message = "Invalid pagination parameters." });

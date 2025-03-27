@@ -45,7 +45,7 @@ namespace EmployeeManagementSystem.Services
         //    return timesheetDTO;
         //}
 
-        public async Task<string> AddTimesheetAsync(int userId, AddTimesheetDTO addTimesheetDTO)
+        public async Task<string> AddTimesheet(int userId, AddTimesheetDTO addTimesheetDTO)
         {
             var existingTimesheet = await _timesheetRepository.GetTimesheetByDateAsync(userId, addTimesheetDTO.Date);
             if (existingTimesheet != null)
@@ -104,9 +104,9 @@ namespace EmployeeManagementSystem.Services
             return timesheetDTO;
         }
 
-        public async Task<List<Timesheet>> ViewTimesheets(int id, string order, int pageNumber, int pageSize)
+        public async Task<List<Timesheet>> ViewTimesheets(int id, char order, int pageNumber, int pageSize)
         {
-            List<Timesheet> timesheets = order.ToUpper() == "A"
+            List<Timesheet> timesheets = order.ToString().ToUpper() == "A"
                     ? await _timesheetRepository.GetTimesheetsByUserAAsync(id, pageNumber, pageSize)
                     : await _timesheetRepository.GetTimesheetsByUserDAsync(id, pageNumber, pageSize);
 

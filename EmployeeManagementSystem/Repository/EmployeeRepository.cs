@@ -25,15 +25,15 @@ namespace EmployeeManagementSystem.Repository
             return await _context.Employees.FirstOrDefaultAsync(e => e.Email == email && e.IsActive == true);
         }
 
-        public async Task<decimal> GetTotalHoursForWeekAsync(int employeeId, DateOnly referenceDate)
-        {
-            var startOfWeek = referenceDate.ToDateTime(TimeOnly.MinValue).AddDays(-(int)referenceDate.ToDateTime(TimeOnly.MinValue).DayOfWeek);
-            var endOfWeek = startOfWeek.AddDays(6);
+        //public async Task<decimal> GetTotalHoursForWeekAsync(int employeeId, DateOnly referenceDate)
+        //{
+        //    var startOfWeek = referenceDate.ToDateTime(TimeOnly.MinValue).AddDays(-(int)referenceDate.ToDateTime(TimeOnly.MinValue).DayOfWeek);
+        //    var endOfWeek = startOfWeek.AddDays(6);
 
-            return await _context.Timesheets
-                .Where(t => t.EmployeeID == employeeId && t.Date >= DateOnly.FromDateTime(startOfWeek) && t.Date <= DateOnly.FromDateTime(endOfWeek))
-                .SumAsync(t => t.TotalHoursWorked);
-        }
+        //    return await _context.Timesheets
+        //        .Where(t => t.EmployeeID == employeeId && t.Date >= DateOnly.FromDateTime(startOfWeek) && t.Date <= DateOnly.FromDateTime(endOfWeek))
+        //        .SumAsync(t => t.TotalHoursWorked);
+        //}
 
         public async Task<List<Employee>> GetAllEmployeesAsync()
         {

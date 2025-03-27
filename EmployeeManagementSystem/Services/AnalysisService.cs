@@ -43,7 +43,7 @@ namespace EmployeeManagementSystem.Services
             return null;
         }
 
-        public async Task<byte[]> ExportTimesheetsToExcel(int id, char order = 'A', int pageNumber = 1, int pageSize = 10)
+        public async Task<byte[]> ExportTimesheetsToExcel(int id, char order, int pageNumber = 1, int pageSize = 10)
         {
             List<Timesheet> timesheets = order.ToString().ToUpper() == "A"
                 ? await _timesheetRepository.GetTimesheetsByUserAAsync(id, pageNumber, pageSize)

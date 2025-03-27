@@ -47,7 +47,7 @@ namespace EmployeeManagementSystem.Controllers
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
-            List<Leave> leavesList = await _leaveService.GetLeaveByUserStatusAsync(userId.Value, leaveType, pageNumber, pageSize, order);
+            List<Leave> leavesList = await _leaveService.GetLeaveByUserStatusAsync(userId.Value, leaveType, order, pageNumber, pageSize);
 
             if (leavesList == null)
                 return NotFound("No leaves found");

@@ -7,7 +7,7 @@ namespace EmployeeManagementSystem.IRepository
         Task<Employee?> GetEmployeeByIDAsyncIsActive(int employeeId);
         Task<Employee?> GetEmployeeByIDAsyncIsActive(string email);
         Task<Employee?> GetEmployeeByIDAsync(int employeeId);
-        Task<decimal> GetTotalHoursForWeekAsync(int employeeId, DateOnly referenceDate);
+        //Task<decimal> GetTotalHoursForWeekAsync(int employeeId, DateOnly referenceDate);
         Task<List<Employee>> GetAllEmployeesAsync();
     }
 }

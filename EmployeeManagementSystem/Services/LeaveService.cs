@@ -40,7 +40,7 @@ namespace EmployeeManagementSystem.Services
             return "Leave added succesfully";
         }
 
-        public async Task<List<Leave>> GetLeaveByUserStatusAsync(int id, string status, int pageNumber = 1, int pageSize = 10, char order = 'A')
+        public async Task<List<Leave>> GetLeaveByUserStatusAsync(int id, string status, char order, int pageNumber = 1, int pageSize = 10)
         {
             List<Leave> leave = order.ToString().ToUpper() == "A"
                     ? await _leaveRepository.GetLeaveByUserAAsync(id, status, pageNumber, pageSize)

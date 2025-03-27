@@ -7,5 +7,7 @@ namespace EmployeeManagementSystem.IServices
         string GenerateToken(int ID, string role);
         Task<string?> AuthenticateAsync(string email, string password);
         Task<string> ResetPassword(string userRole, int id, ResetPasswordDTO resetPasswordDTO);
+        Task<bool> SendPasswordResetEmailAsync(string email);
+        Task<bool> ResetPassword(string token, string newPassword);
     }
 }

@@ -23,6 +23,8 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ITimesheetService, TimesheetService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -94,7 +96,6 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(buil
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using EmployeeManagementSystem.IServices;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using EmployeeManagementSystem.Services;
 
 namespace EmployeeManagementSystem.Controllers
 {
@@ -13,12 +14,15 @@ namespace EmployeeManagementSystem.Controllers
         private readonly IAdminService _adminService;
         private readonly IEmployeeServices _employeeServices;
         private readonly IAuthServices _authServices;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IAuthServices authServices, IEmployeeServices employeeServices, IAdminService adminService)
+        public AuthController(IAuthServices authServices, IEmployeeServices employeeServices, IAdminService adminService, IEmailService emailService)
         {
             _adminService = adminService;
             _employeeServices = employeeServices;
-            _authServices = authServices;
+            _authServices = authServices;            
+            _emailService = emailService;
+
         }
 
         private string? GetUserRole()
@@ -63,6 +67,24 @@ namespace EmployeeManagementSystem.Controllers
                 return Ok(new { Message = msg });
 
             return BadRequest(new { Message = msg }); 
+        }
+
+        [HttpPut("request-password-reset")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequestDTO request)
+        {
+            var result = await _authServices.SendPasswordResetEmailAsync(request.Email);
+            if (result) return Ok(new { message = "Password reset email sent" });
+
+            return NotFound(new { message = "User not found" });
+        }
+
+        [HttpPut("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordTokenDTO request)
+        {
+            var result = await _authServices.ResetPassword(request.Token, request.NewPassword);
+            if (result) return Ok(new { message = "Password updated successfully" });
+
+            return BadRequest(new { message = "Invalid or expired token" });
         }
     }
 }

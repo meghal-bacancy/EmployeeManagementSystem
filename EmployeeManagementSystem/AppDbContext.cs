@@ -18,11 +18,12 @@ public class AppDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
-        //base.OnModelCreating(modelBuilder);
-        //modelBuilder.ApplyConfiguration(new AdminConfigurations());
-        //modelBuilder.ApplyConfiguration(new DepartmentConfigurations());
-        //modelBuilder.ApplyConfiguration(new EmployeeConfigurations());
-        //modelBuilder.ApplyConfiguration(new LeaveConfigurations());
-        //modelBuilder.ApplyConfiguration(new TimesheetConfigurations());
     }
 }
+
+//base.OnModelCreating(modelBuilder);
+//modelBuilder.ApplyConfiguration(new AdminConfigurations());
+//modelBuilder.ApplyConfiguration(new DepartmentConfigurations());
+//modelBuilder.ApplyConfiguration(new EmployeeConfigurations());
+//modelBuilder.ApplyConfiguration(new LeaveConfigurations());
+//modelBuilder.ApplyConfiguration(new TimesheetConfigurations());

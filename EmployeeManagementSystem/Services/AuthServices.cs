@@ -1,10 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using DocumentFormat.OpenXml.Spreadsheet;
 using EmployeeManagementSystem.DTOs;
 using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EmployeeManagementSystem.Services
@@ -14,21 +16,25 @@ namespace EmployeeManagementSystem.Services
         private readonly IConfiguration _config;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAdminRepository _adminRepository;
-        private readonly Dictionary<string, Func<int, ResetPasswordDTO, Task<string>>> _resetPasswordHandlers;
+        private readonly IEmailService _emailService;
+        private readonly IMemoryCache _cache;
+        private const string ResetTokensKey = "PasswordResetTokens";
+        private Dictionary<string, Func<int, ResetPasswordDTO, Task<string>>> _resetPasswordHandlers;
+        private Dictionary<string, string> _passwordResetTokens = new Dictionary<string, string>();
 
-
-        public AuthServices(IConfiguration config, IEmployeeRepository employeeRepository, IAdminRepository adminRepository)
+        public AuthServices(IConfiguration config, IEmployeeRepository employeeRepository, IAdminRepository adminRepository, IEmailService emailService, IMemoryCache cache)
         {
             _config = config;
             _employeeRepository = employeeRepository;
             _adminRepository = adminRepository;
+            _emailService = emailService;
+            _cache = cache;
 
             _resetPasswordHandlers = new Dictionary<string, Func<int, ResetPasswordDTO, Task<string>>>
             {
                 { "Employee", ResetEmployeePassword },
                 { "Admin", ResetAdminPassword }
             };
-
         }
 
         public string GenerateToken(int ID, string role)
@@ -103,5 +109,56 @@ namespace EmployeeManagementSystem.Services
             await _adminRepository.UpdateAsync(admin);
             return "Password Update Successful";
         }
+
+        public async Task<bool> SendPasswordResetEmailAsync(string email)
+        {
+            var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
+            var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
+            if (emp == null && admin == null)
+            {
+                return false;
+            }
+
+            string token = Guid.NewGuid().ToString();
+            var tokens = _cache.Get<Dictionary<string, string>>(ResetTokensKey) ?? new Dictionary<string, string>();
+            tokens[email] = token;
+            _cache.Set(ResetTokensKey, tokens);
+
+            string resetLink = $"/reset-password?token={token}";
+            await _emailService.SendEmailAsync(email, "Password Reset Request", $"Token: {token}");
+
+            return true;
+        }
+
+        public async Task<bool> ResetPassword(string token, string newPassword)
+        {
+            var tokens = _cache.Get<Dictionary<string, string>>(ResetTokensKey) ?? new Dictionary<string, string>();
+            var email = tokens.FirstOrDefault(x => x.Value == token).Key;
+
+            if (string.IsNullOrEmpty(email)) return false;
+
+            var emp = await _employeeRepository.GetEmployeeByIDAsyncIsActive(email.ToLower());
+            if (emp != null)
+            {
+                emp.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                await _employeeRepository.UpdateAsync(emp);
+                tokens.Remove(email);
+                _cache.Set(ResetTokensKey, tokens);
+                return true;
+            }
+
+            var admin = await _adminRepository.GetAdminIDAsyncIsActive(email.ToLower());
+            if (admin != null)
+            {
+                admin.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                await _adminRepository.UpdateAsync(admin);
+                tokens.Remove(email);
+                _cache.Set(ResetTokensKey, tokens);
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }

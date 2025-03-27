@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using EmployeeManagementSystem.DTOs;
+using EmployeeManagementSystem.Helpers;
 using EmployeeManagementSystem.IRepository;
 using EmployeeManagementSystem.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -18,18 +19,12 @@ namespace EmployeeManagementSystem.Controllers
             _employeeServices = employeeServices;
         }
 
-        private int? GetUserId()
-        {
-            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return idClaim != null && int.TryParse(idClaim, out int userId) ? userId : (int?)null;
-        }
-
         [HttpGet("employeeDetails")]
         [Authorize(Policy = "EmployeeOnly")]
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> EmployeeDetails()
         {
-            int? userId = GetUserId();
+            int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
@@ -46,7 +41,7 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> UpdateEmployeeDetails([FromBody] UpdateEmployeeDTO updateEmployeeDTO)
         {
-            int? userId = GetUserId();
+            int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 

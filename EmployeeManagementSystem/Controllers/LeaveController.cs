@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Claims;
 using EmployeeManagementSystem.DTOs;
+using EmployeeManagementSystem.Helpers;
 using EmployeeManagementSystem.IServices;
 using EmployeeManagementSystem.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -24,18 +25,12 @@ namespace EmployeeManagementSystem.Controllers
             _context = context;
         }
 
-        private int? GetUserId()
-        {
-            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return idClaim != null && int.TryParse(idClaim, out int userId) ? userId : (int?)null;
-        }
-
         [HttpPost("employee/applyLeave/")]
         [Authorize(Policy = "EmployeeOnly")]
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> AddLeave([FromBody] AddLeaveDTO addLeaveDTO)
         {
-            int? userId = GetUserId();
+            int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 
@@ -48,7 +43,7 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> ViewLeave([FromRoute] string leaveType, [FromQuery] char order = 'A', [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            int? userId = GetUserId();
+            int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 

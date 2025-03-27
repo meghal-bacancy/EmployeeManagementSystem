@@ -1,6 +1,5 @@
-﻿using System.Security.Claims;
-using EmployeeManagementSystem.DTOs;
-using EmployeeManagementSystem.IRepository;
+﻿using EmployeeManagementSystem.DTOs;
+using EmployeeManagementSystem.Helpers;
 using EmployeeManagementSystem.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,18 +17,12 @@ namespace EmployeeManagementSystem.Controllers
             _analysisService = analysisService;
         }
 
-        private int? GetUserId()
-        {
-            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return idClaim != null && int.TryParse(idClaim, out int userId) ? userId : (int?)null;
-        }
-
         [HttpGet("employee/totalLoggedHours/{duration}/{date}")]
         [Authorize(Policy = "EmployeeOnly")]
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> TotalLoggedHours([FromRoute] DateOnly date, [FromRoute] string duration)
         {
-            int? userId = GetUserId();
+            int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 

@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using EmployeeManagementSystem.IServices;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using EmployeeManagementSystem.Services;
+using EmployeeManagementSystem.Helpers;
 
 namespace EmployeeManagementSystem.Controllers
 {
@@ -11,29 +10,11 @@ namespace EmployeeManagementSystem.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IAdminService _adminService;
-        private readonly IEmployeeServices _employeeServices;
         private readonly IAuthServices _authServices;
-        private readonly IEmailService _emailService;
 
         public AuthController(IAuthServices authServices, IEmployeeServices employeeServices, IAdminService adminService, IEmailService emailService)
         {
-            _adminService = adminService;
-            _employeeServices = employeeServices;
             _authServices = authServices;            
-            _emailService = emailService;
-
-        }
-
-        private string? GetUserRole()
-        {
-            return User.FindFirst(ClaimTypes.Role)?.Value;
-        }
-
-        private int? GetUserId()
-        {
-            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return idClaim != null && int.TryParse(idClaim, out int userId) ? userId : (int?)null;
         }
 
         [HttpPost("login")]
@@ -53,11 +34,11 @@ namespace EmployeeManagementSystem.Controllers
         [Authorize(Policy = "RequireValidID")]
         public async Task<IActionResult> resetPassword(ResetPasswordDTO resetPasswordDTO)
         {
-            string? userRole = GetUserRole();
+            string? userRole = UserHelper.GetUserRole(HttpContext);
             if (userRole == null)
                 return Unauthorized(new { Message = "Invalid or missing user Role in token." });
 
-            int? userId = GetUserId();
+            int? userId = UserHelper.GetUserId(HttpContext);
             if (userId == null)
                 return Unauthorized(new { Message = "Invalid or missing user ID in token." });
 

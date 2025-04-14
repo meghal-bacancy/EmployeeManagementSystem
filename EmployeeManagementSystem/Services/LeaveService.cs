@@ -11,7 +11,7 @@ namespace EmployeeManagementSystem.Services
     {
         private readonly ILeaveRepository _leaveRepository;
         private static readonly HashSet<string> ValidLeaveTypes = new() { "Sick", "Casual", "Vacation", "Other" };
-        private static readonly HashSet<string> ValidStatuses = new() { "Approved", "Rejected" };
+        private static readonly HashSet<string> ValidStatuses = new() { "Pending", "Approved", "Rejected" };
 
         public LeaveService (ILeaveRepository leaveRepository)
         {

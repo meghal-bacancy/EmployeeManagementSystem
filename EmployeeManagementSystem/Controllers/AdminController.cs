@@ -83,7 +83,6 @@ namespace EmployeeManagementSystem.Controllers
             }
         }
 
-
         [HttpGet("viewAllEmployeeDetails")]
         [Authorize(Policy = "AdminOnly")]
         [Authorize(Policy = "RequireValidID")]

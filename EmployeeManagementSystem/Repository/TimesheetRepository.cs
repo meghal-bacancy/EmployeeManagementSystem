@@ -24,7 +24,6 @@ namespace EmployeeManagementSystem.Repository
                 .SumAsync(t => t.TotalHoursWorked);
         }
 
-
         public async Task<decimal> GetTotalHoursForMonthAsync(int employeeId, DateOnly referenceDate)
         {
             var endOfWeek = referenceDate.AddDays(30);

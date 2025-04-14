@@ -61,6 +61,5 @@ namespace EmployeeManagementSystem.Repository
 
             return totalLeaves;
         }
-
     }
 }

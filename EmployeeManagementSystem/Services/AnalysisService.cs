@@ -16,7 +16,6 @@ namespace EmployeeManagementSystem.Services
         private readonly IEmployeeRepository _employeeRepository;
         private readonly Dictionary<string, Func<int, DateOnly, Task<decimal>>> _durationHandlers;
 
-
         public AnalysisService(ITimesheetRepository timesheetRepository, ILeaveRepository leaveRepository, IEmployeeRepository employeeRepository)
         {
             _timesheetRepository = timesheetRepository;
@@ -98,7 +97,7 @@ namespace EmployeeManagementSystem.Services
                 }
 
                 using var stream = new MemoryStream();
-                workbook.SaveAs(stream);
+                    workbook.SaveAs(stream);
                 return stream.ToArray();
             }
             catch (ArgumentException argEx)
